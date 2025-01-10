@@ -1,0 +1,86 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(to bottom, #f7d9c4, #ff9b42);
+}
+
+.slot-machine {
+    text-align: center;
+    background: #fff;
+    padding: 20px 20px 50px; /* Extra padding at the bottom for spin button */
+    border-radius: 10px;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.25);
+    position: relative;
+}
+
+h1 {
+    color: #ff7547;
+}
+
+.reels {
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    height: 80px; /* Matches symbol height */
+    margin: 20px 0;
+}
+
+.reel-container {
+    width: 80px;             /* Matches symbol width */
+    height: 70px;            /* Matches symbol height */
+    overflow: hidden;
+    border: 2px solid #ff6347;
+    border-radius: 10px;
+    margin: 0 10px;
+    background: #fdfdfd;
+    position: relative;
+}
+
+.reel {
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease-out; /* Smooth stopping transition */
+}
+
+.symbol {
+    width: 80px;             /* Matches slot container width */
+    height: 80px;            /* Matches slot container height */
+    font-size: 60px;         /* Emoji size */
+    text-align: center;      /* Center horizontally */
+    line-height: 80px;       /* Match container height for vertical centering */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Keyframes for reel spin */
+@keyframes spin {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-480px); } /* Matches height of 6 symbols */
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 18px;
+    color: white;
+    background: #ff6347;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 30px; /* Add space between the button and the reels */
+}
+
+button:hover {
+    background: #e5533b;
+}
+
+#result {
+    font-size: 18px;
+    color: #333;
+    margin-top: 20px;
+}
