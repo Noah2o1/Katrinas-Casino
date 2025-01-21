@@ -234,7 +234,7 @@
             const winningSegment = segments[winningIndex];
 
             if (selectedBet === winningSegment.color) {
-                const winnings = winningSegment.color === "green" ? 500 : 100;
+                const winnings = winningSegment.color === "green" ? 500 : 150;
                 balance += winnings;
                 resultMessage.textContent = `You won! ${winningSegment.color.toUpperCase()} +${winnings} 💰`;
             } else {
