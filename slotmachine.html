@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slot Machine</title>
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle, #000428, #004e92);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .slot-machine-container {
+            text-align: center;
+        }
+
+        .slot-title {
+            font-size: 3rem;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ff8c00, 0 0 40px #ffd700, 0 0 60px #ff4500;
+            animation: glow 2s infinite alternate;
+        }
+
+        .currency-display {
+            margin-top: 10px;
+            font-size: 1.5rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px #fff, 0 0 20px #ff8c00;
+        }
+
+        .slot-reels {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .reel {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px #fff, 0 0 20px #ff8c00;
+        }
+
+        .spin-button, .menu-button {
+            padding: 10px 30px;
+            background: #ffd700;
+            color: #000;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .spin-button:hover, .menu-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 223, 0, 0.8);
+        }
+
+        .spin-button:disabled {
+            background: #d4d4d4;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .result-message {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        /* Glow Animation */
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #ff8c00, 0 0 20px #ffd700, 0 0 30px #ff4500;
+            }
+            to {
+                text-shadow: 0 0 20px #ffd700, 0 0 40px #ff8c00, 0 0 50px #ff4500;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="slot-machine-container">
+        <h1 class="slot-title">🎰 Slot Machine 🎰</h1>
+        <p class="currency-display">Balance: <span id="balance">0</span> 💰</p>
+        <div class="slot-reels">
+            <div class="reel" id="reel1">🍒</div>
+            <div class="reel" id="reel2">🍋</div>
+            <div class="reel" id="reel3">🍉</div>
+        </div>
+        <button class="spin-button" id="spinButton">Spin (20 💰)</button>
+        <button class="menu-button" id="menuButton">Back to Main Menu</button>
+        <p class="result-message" id="resultMessage"></p>
+    </div>
+
+    <script>
+        const symbols = ["🍒", "🍋", "🍉", "🍇", "⭐", "🔔"];
+        const spinCost = 20;
+        const jackpotReward = 100;
+        const partialReward = 50;
+
+        // Rigged randomness configuration
+        const riggedRandomness = {
+            jackpot: 3, // 3% chance
+            partialWin: 10, // 10% chance
+            winCooldown: 5, // Minimum spins before next win
+        };
+
+        let cooldownCounter = 0; // Track spins since last win
+
+        // Retrieve or initialize balance
+        let balance = localStorage.getItem("casinoCurrency") || 500;
+        balance = parseInt(balance);
+
+        // Update displayed balance
+        const balanceElement = document.getElementById("balance");
+        balanceElement.textContent = balance;
+
+        const updateStats = (spent, lost) => {
+            const stats = JSON.parse(localStorage.getItem("casinoStatistics")) || {
+                games: { "Slot Machine": { spent: 0, lost: 0 } },
+            };
+            stats.games["Slot Machine"].spent += spent;
+            stats.games["Slot Machine"].lost += lost;
+            localStorage.setItem("casinoStatistics", JSON.stringify(stats));
+        };
+
+        // Menu button redirects back to main menu
+        document.getElementById("menuButton").addEventListener("click", () => {
+            window.location.href = "index.html";
+        });
+
+        document.getElementById("spinButton").addEventListener("click", async () => {
+            const resultMessage = document.getElementById("resultMessage");
+
+            if (balance < spinCost) {
+                resultMessage.textContent = "Not enough balance to spin!";
+                return;
+            }
+
+            // Deduct spin cost and update balance
+            balance -= spinCost;
+            localStorage.setItem("casinoCurrency", balance);
+            balanceElement.textContent = balance;
+            updateStats(spinCost, 0);
+
+            // Show spinning animation
+            const reelElements = [
+                document.getElementById("reel1"),
+                document.getElementById("reel2"),
+                document.getElementById("reel3"),
+            ];
+            reelElements.forEach(reel => (reel.textContent = "🔄"));
+
+            // Simulate spinning delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Determine result using rigged randomness and cooldown
+            const randomChance = Math.random() * 100;
+            let resultType = "loss";
+
+            if (cooldownCounter >= riggedRandomness.winCooldown) {
+                if (randomChance < riggedRandomness.jackpot) {
+                    resultType = "jackpot";
+                } else if (randomChance < riggedRandomness.jackpot + riggedRandomness.partialWin) {
+                    resultType = "partialWin";
+                }
+                if (resultType !== "loss") cooldownCounter = 0; // Reset cooldown after win
+            } else {
+                cooldownCounter++; // Increment cooldown for losses
+            }
+
+            // Generate reel results based on outcome type
+            let reelResults;
+            if (resultType === "jackpot") {
+                const jackpotSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                reelResults = [jackpotSymbol, jackpotSymbol, jackpotSymbol];
+            } else if (resultType === "partialWin") {
+                const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                const otherSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                reelResults = [winSymbol, winSymbol, otherSymbol];
+            } else {
+                reelResults = symbols.sort(() => Math.random() - 0.5).slice(0, 3); // Random loss
+            }
+
+            // Display reel results
+            reelElements.forEach((reel, index) => {
+                reel.textContent = reelResults[index];
+            });
+
+            // Update result message and balance for wins
+            if (resultType === "jackpot") {
+                balance += jackpotReward;
+                resultMessage.textContent = `JACKPOT! 🎉 You win ${jackpotReward} 💰!`;
+            } else if (resultType === "partialWin") {
+                balance += partialReward;
+                resultMessage.textContent = `You win ${partialReward} 💰!`;
+            } else {
+                resultMessage.textContent = "No win. Try again!";
+            }
+
+            localStorage.setItem("casinoCurrency", balance);
+            balanceElement.textContent = balance;
+        });
+    </script>
+</body>
+</html>

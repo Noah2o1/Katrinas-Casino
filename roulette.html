@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roulette</title>
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle, #000428, #004e92);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .roulette-container {
+            text-align: center;
+        }
+
+        .roulette-title {
+            font-size: 3rem;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ff8c00, 0 0 40px #ffd700, 0 0 60px #ff4500;
+            animation: glow 2s infinite alternate;
+        }
+
+        .currency-display {
+            margin-top: 10px;
+            font-size: 1.5rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px #fff, 0 0 20px #ff8c00;
+        }
+
+        .roulette-wheel-container {
+            margin: 30px auto;
+            width: 300px;
+            height: 300px;
+            position: relative;
+        }
+
+        .roulette-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 10px solid #ffd700;
+            position: relative;
+            transform-origin: center;
+        }
+
+        .segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            background: transparent;
+            transform-origin: 100% 100%;
+            clip-path: polygon(50% 50%, 100% 0, 100% 100%);
+        }
+
+        .segment.red {
+            background: #ff4d4d;
+        }
+
+        .segment.black {
+            background: #333;
+        }
+
+        .segment.green {
+            background: #4caf50;
+        }
+
+        .highlight {
+            box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .ball {
+            width: 15px;
+            height: 15px;
+            background: #fff;
+            border-radius: 50%;
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translate(-50%, 0);
+        }
+
+        .bet-options {
+            margin: 20px 0;
+        }
+
+        .bet-button {
+            padding: 10px 20px;
+            background: #ffd700;
+            color: #000;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .bet-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 223, 0, 0.8);
+        }
+
+        .spin-button, .menu-button {
+            padding: 10px 30px;
+            background: #ffd700;
+            color: #000;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .spin-button:hover, .menu-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 223, 0, 0.8);
+        }
+
+        .result-message {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        /* Glow Animation */
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #ff8c00, 0 0 20px #ffd700, 0 0 30px #ff4500;
+            }
+            to {
+                text-shadow: 0 0 20px #ffd700, 0 0 40px #ff8c00, 0 0 50px #ff4500;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="roulette-container">
+        <h1 class="roulette-title">🎡 Roulette 🎡</h1>
+        <p class="currency-display">Balance: <span id="balance">0</span> 💰</p>
+        <div class="roulette-wheel-container">
+            <div class="roulette-wheel" id="rouletteWheel">
+                <!-- Segments will be dynamically added -->
+            </div>
+        </div>
+        <div class="bet-options">
+            <button class="bet-button" data-bet="red">Bet on Red</button>
+            <button class="bet-button" data-bet="black">Bet on Black</button>
+            <button class="bet-button" data-bet="green">Bet on Green</button>
+        </div>
+        <button class="spin-button" id="spinButton">Spin</button>
+        <button class="menu-button" id="menuButton">Back to Main Menu</button>
+        <p class="result-message" id="resultMessage"></p>
+    </div>
+
+    <script>
+        const balanceElement = document.getElementById("balance");
+        const spinButton = document.getElementById("spinButton");
+        const menuButton = document.getElementById("menuButton");
+        const resultMessage = document.getElementById("resultMessage");
+        const wheel = document.getElementById("rouletteWheel");
+
+        const segments = [
+            { color: "red", number: 1 },
+            { color: "black", number: 2 },
+            { color: "red", number: 3 },
+            { color: "black", number: 4 },
+            { color: "green", number: 0 },
+            { color: "red", number: 5 },
+            { color: "black", number: 6 },
+            { color: "red", number: 7 },
+            { color: "black", number: 8 },
+            { color: "red", number: 9 }
+        ];
+
+        let balance = parseInt(localStorage.getItem("casinoCurrency")) || 500;
+        balanceElement.textContent = balance;
+
+        let selectedBet = null;
+        let currentRotation = 0;
+
+        // Populate segments dynamically
+        segments.forEach((segment, index) => {
+            const segmentDiv = document.createElement("div");
+            segmentDiv.className = `segment ${segment.color}`;
+            segmentDiv.style.transform = `rotate(${(index * 360) / segments.length}deg)`;
+            wheel.appendChild(segmentDiv);
+        });
+
+        document.querySelectorAll(".bet-button").forEach((button) => {
+            button.addEventListener("click", () => {
+                selectedBet = button.dataset.bet;
+                resultMessage.textContent = `You bet on ${selectedBet.toUpperCase()}.`;
+            });
+        });
+
+        spinButton.addEventListener("click", async () => {
+            if (!selectedBet) {
+                resultMessage.textContent = "Please place a bet!";
+                return;
+            }
+
+            if (balance < 50) {
+                resultMessage.textContent = "Not enough balance!";
+                return;
+            }
+
+            balance -= 100;
+            balanceElement.textContent = balance;
+            localStorage.setItem("casinoCurrency", balance);
+
+            const spinDuration = 3; // seconds
+            const randomSpin = Math.random() * 360 + 720;
+            currentRotation += randomSpin;
+
+            wheel.style.transition = `transform ${spinDuration}s ease-out`;
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+            await new Promise((resolve) => setTimeout(resolve, spinDuration * 1000));
+
+            const winningIndex = Math.floor(((currentRotation % 360) / (360 / segments.length)) % segments.length);
+            const winningSegment = segments[winningIndex];
+
+            if (selectedBet === winningSegment.color) {
+                const winnings = winningSegment.color === "green" ? 500 : 100;
+                balance += winnings;
+                resultMessage.textContent = `You won! ${winningSegment.color.toUpperCase()} +${winnings} 💰`;
+            } else {
+                resultMessage.textContent = `You lost! Winning color: ${winningSegment.color.toUpperCase()}`;
+            }
+
+            balanceElement.textContent = balance;
+            localStorage.setItem("casinoCurrency", balance);
+        });
+
+        menuButton.addEventListener("click", () => {
+            localStorage.setItem("casinoCurrency", balance);
+            window.location.href = "index.html";
+        });
+    </script>
+</body>
+</html>

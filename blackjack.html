@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack</title>
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle, #000428, #004e92);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .blackjack-container {
+            text-align: center;
+        }
+
+        .blackjack-title {
+            font-size: 3rem;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ff8c00, 0 0 40px #ffd700, 0 0 60px #ff4500;
+            animation: glow 2s infinite alternate;
+        }
+
+        .currency-display {
+            margin-top: 10px;
+            font-size: 1.5rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px #fff, 0 0 20px #ff8c00;
+        }
+
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .card {
+            width: 70px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px #fff, 0 0 20px #ff8c00;
+        }
+
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .action-buttons button {
+            padding: 10px 20px;
+            background: #ffd700;
+            color: #000;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .action-buttons button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 223, 0, 0.8);
+        }
+
+        .restart-button {
+            display: none;
+            padding: 10px 30px;
+            background: #ff8c00;
+            color: #000;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .restart-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.8);
+        }
+
+        .result-message {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        /* Glow Animation */
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #ff8c00, 0 0 20px #ffd700, 0 0 30px #ff4500;
+            }
+            to {
+                text-shadow: 0 0 20px #ffd700, 0 0 40px #ff8c00, 0 0 50px #ff4500;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="blackjack-container">
+        <h1 class="blackjack-title">🃏 Blackjack 🃏</h1>
+        <p class="currency-display">Balance: <span id="balance">0</span> 💰</p>
+        <div class="cards-container" id="playerCards"></div>
+        <div class="cards-container" id="dealerCards"></div>
+        <div class="action-buttons">
+            <button id="hitButton">Hit</button>
+            <button id="standButton">Stand</button>
+            <button id="menuButton">Back to Main Menu</button>
+        </div>
+        <button id="restartButton" class="restart-button">Restart Game</button>
+        <p class="result-message" id="resultMessage"></p>
+    </div>
+
+    <script>
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        const cardValueMap = {
+            '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10,
+            'J': 10, 'Q': 10, 'K': 10, 'A': 11,
+        };
+
+        let balance = localStorage.getItem("casinoCurrency") || 500;
+        balance = parseInt(balance);
+
+        let deck = [];
+        let playerHand = [];
+        let dealerHand = [];
+
+        const balanceElement = document.getElementById('balance');
+        const resultMessage = document.getElementById('resultMessage');
+        const playerCardsElement = document.getElementById('playerCards');
+        const dealerCardsElement = document.getElementById('dealerCards');
+        const hitButton = document.getElementById('hitButton');
+        const standButton = document.getElementById('standButton');
+        const menuButton = document.getElementById('menuButton');
+        const restartButton = document.getElementById('restartButton');
+
+        balanceElement.textContent = balance;
+
+        menuButton.addEventListener('click', () => {
+            window.location.href = "index.html";
+        });
+
+        const initializeGame = () => {
+            deck = createDeck();
+            playerHand = [];
+            dealerHand = [];
+            playerCardsElement.innerHTML = '';
+            dealerCardsElement.innerHTML = '';
+            resultMessage.textContent = '';
+            hitButton.disabled = false;
+            standButton.disabled = false;
+            restartButton.style.display = 'none';
+
+            // Initial deal
+            playerHand.push(drawCard(), drawCard());
+            dealerHand.push(drawCard(), drawCard());
+
+            renderHands();
+        };
+
+        const createDeck = () => {
+            const deck = [];
+            for (const suit of suits) {
+                for (const value of values) {
+                    deck.push({ suit, value });
+                }
+            }
+            return deck.sort(() => Math.random() - 0.5);
+        };
+
+        const drawCard = () => {
+            return deck.pop();
+        };
+
+        const renderHands = () => {
+            playerCardsElement.innerHTML = playerHand.map(card => renderCard(card)).join('');
+            dealerCardsElement.innerHTML = dealerHand.map(card => renderCard(card)).join('');
+        };
+
+        const renderCard = (card) => {
+            return `<div class="card">${card.value}${card.suit}</div>`;
+        };
+
+        const calculateHandValue = (hand) => {
+            let value = hand.reduce((sum, card) => sum + cardValueMap[card.value], 0);
+            let aces = hand.filter(card => card.value === 'A').length;
+
+            while (value > 21 && aces > 0) {
+                value -= 10;
+                aces -= 1;
+            }
+            return value;
+        };
+
+        const endGame = (playerWon) => {
+            const playerValue = calculateHandValue(playerHand);
+            const dealerValue = calculateHandValue(dealerHand);
+
+            if (playerWon) {
+                balance += 50;
+                resultMessage.textContent = `You win! 🎉 Your hand: ${playerValue}, Dealer's hand: ${dealerValue}`;
+            } else {
+                balance -= 50;
+                resultMessage.textContent = `You lose! 😢 Your hand: ${playerValue}, Dealer's hand: ${dealerValue}`;
+            }
+
+            localStorage.setItem("casinoCurrency", balance);
+            balanceElement.textContent = balance;
+
+            hitButton.disabled = true;
+            standButton.disabled = true;
+            restartButton.style.display = 'inline-block';
+        };
+
+        const dealerTurn = () => {
+            while (calculateHandValue(dealerHand) < 17) {
+                dealerHand.push(drawCard());
+            }
+
+            const playerValue = calculateHandValue(playerHand);
+            const dealerValue = calculateHandValue(dealerHand);
+
+            if (playerValue > 21 || (dealerValue <= 21 && dealerValue >= playerValue)) {
+                endGame(false);
+            } else {
+                endGame(true);
+            }
+        };
+
+        hitButton.addEventListener('click', () => {
+            playerHand.push(drawCard());
+            renderHands();
+
+            if (calculateHandValue(playerHand) > 21) {
+                endGame(false);
+            }
+        });
+
+        standButton.addEventListener('click', () => {
+            dealerTurn();
+        });
+
+        restartButton.addEventListener('click', () => {
+            initializeGame();
+        });
+
+        initializeGame();
+    </script>
+</body>
+</html>

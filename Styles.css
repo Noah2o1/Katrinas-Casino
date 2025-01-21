@@ -1,0 +1,178 @@
+/* Global Styles */
+body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #000428, #004e92);
+    font-family: 'Arial', sans-serif;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.casino-container {
+    text-align: center;
+    z-index: 10;
+}
+
+.casino-title {
+    font-size: 4rem;
+    margin-bottom: 30px;
+    color: #ffd700;
+    text-shadow: 0 0 15px #ff8c00, 0 0 30px #ffd700, 0 0 45px #ff4500;
+    animation: glow 2s infinite alternate;
+}
+
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-item {
+    width: 300px;
+    padding: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-item h2 {
+    margin: 0;
+    color: #ffd700;
+    text-shadow: 0 0 5px #fff, 0 0 10px #ff8c00, 0 0 15px #ffd700;
+}
+
+.menu-item .icon {
+    font-size: 2rem;
+    margin-top: 10px;
+}
+
+.menu-item:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 50px rgba(255, 255, 0, 0.6);
+    background: rgba(255, 255, 255, 0.3);
+    animation: hoverWobble 1s infinite;
+}
+
+/* Starry Background */
+.floating-effects {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.star {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    animation: floatStars 8s infinite ease-in-out;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6);
+}
+
+.star:nth-child(1) {
+    top: 10%;
+    left: 15%;
+    animation-duration: 6s;
+    animation-delay: 0s;
+}
+
+.star:nth-child(2) {
+    top: 30%;
+    left: 50%;
+    animation-duration: 8s;
+    animation-delay: 1s;
+}
+
+.star:nth-child(3) {
+    top: 60%;
+    left: 25%;
+    animation-duration: 5s;
+    animation-delay: 2s;
+}
+
+.star:nth-child(4) {
+    top: 75%;
+    left: 70%;
+    animation-duration: 7s;
+    animation-delay: 3s;
+}
+
+.star:nth-child(5) {
+    top: 40%;
+    left: 80%;
+    animation-duration: 9s;
+    animation-delay: 4s;
+}
+
+/* Animations */
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px #ff8c00, 0 0 20px #ffd700, 0 0 30px #ff4500;
+    }
+    to {
+        text-shadow: 0 0 15px #ffd700, 0 0 30px #ff8c00, 0 0 45px #ff4500;
+    }
+}
+
+@keyframes hoverWobble {
+    0% { transform: scale(1.2) rotate(0deg); }
+    25% { transform: scale(1.25) rotate(-2deg); }
+    50% { transform: scale(1.2) rotate(2deg); }
+    75% { transform: scale(1.25) rotate(-2deg); }
+    100% { transform: scale(1.2) rotate(0deg); }
+}
+
+@keyframes floatStars {
+    from {
+        transform: translateY(0) scale(1);
+        opacity: 0.7;
+    }
+    to {
+        transform: translateY(-200px) scale(1.5);
+        opacity: 0;
+    }
+}
+
+.currency-container {
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    color: #ffd700;
+    text-shadow: 0 0 5px #fff, 0 0 10px #ff8c00;
+    animation: glow 2s infinite alternate;
+}
+
+.currency-container button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #ffd700;
+    color: #000;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.currency-container button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(255, 223, 0, 0.8);
+}
